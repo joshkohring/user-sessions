@@ -18,8 +18,13 @@ The project used to experiment with user sessions in an SSO environment is struc
 ### 1.1. Prerequisites
 - Git with bash commandline (on Windows, [GitBash](https://git-scm.com/downloads) offers it)
 - JDK 24, ideally GraalVM CE (for instance, using [SDKMAN!](https://sdkman.io/))
+```sh
+sdk list java
+sdk install java 24-graalce
+sdk use java 24-graalce
+```
 - [Docker Desktop](https://www.docker.com/get-started/)
-- Node with `npm`
+- [NodeJS](https://nodejs.org/en/download) with `npm` (latest LTS version)
 - Self-signed certificate for the dev machine. [This repo](https://github.com/ch4mpy/self-signed-certificate-generation) contains scripts to generate certificates and instruction to install it with the dev machine OS & installed JREs
 - an IDE (the author uses [Eclipse STS and Visual Studio Code](https://spring.io/tools))
 
