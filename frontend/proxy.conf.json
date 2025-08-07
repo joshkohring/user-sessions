@@ -1,0 +1,10 @@
+{
+  "/ui/bff": {
+    "target": "https://localhost",
+    "secure": false
+  },
+  "/third-party/bff": {
+    "target": "https://localhost",
+    "secure": false
+  }
+}

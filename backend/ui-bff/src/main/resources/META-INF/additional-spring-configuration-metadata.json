@@ -1,0 +1,44 @@
+{
+  "properties": [
+    {
+      "name": "third-party-bff-client-id",
+      "type": "java.lang.String",
+      "description": "ID of a client declared in keycloak and itended for the BFF to get tokens on behalf of users with the authorization code flow."
+    },
+    {
+      "name": "third-party-bff-client-secret",
+      "type": "java.lang.String",
+      "description": "Secret for the client \"${third-party-bff-client-id}\" as ID."
+    },
+    {
+      "name": "ui-bff-client-id",
+      "type": "java.lang.String",
+      "description": "ID of a client declared in keycloak and itended for the BFF to get tokens on behalf of users with the authorization code flow."
+    },
+    {
+      "name": "ui-bff-client-secret",
+      "type": "java.lang.String",
+      "description": "Secret for the client \"${third-party-bff-client-id}\" as ID."
+    },
+    {
+      "name": "realm-name",
+      "type": "java.lang.String",
+      "description": "Name of the realm for which the BFF instance is deployed."
+    },
+    {
+      "name": "reverse-proxy-uri",
+      "type": "java.net.URI",
+      "description": "Serves as base to build URIs through the backend's reverse proxy."
+    },
+    {
+      "name": "sso-issuer",
+      "type": "java.lang.String",
+      "description": "OIDC identifier of the realm for which the BFF instance is deployed."
+    },
+    {
+      "name": "users-internal-uri",
+      "type": "java.net.URI",
+      "description": "URI to reach the users micro service directly (not through the reverse proc"
+    }
+  ]
+}

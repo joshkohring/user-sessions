@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/c4-soft/third-party-bff-api",
+  "lib": {
+    "entryFile": "index.ts"
+  }
+}

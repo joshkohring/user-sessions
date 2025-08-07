@@ -1,0 +1,59 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start-ui": "ng serve ui -c development",
+    "start-third-party": "ng serve third-party -c development",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "third-party-bff-api:generate": "npx openapi-generator-cli generate -i ../third-party-bff.openapi.json -g typescript-angular --type-mappings AnyType=any --additional-properties=serviceSuffix=Api,npmName=@c4-soft/third-party-bff-api,npmVersion=0.0.1,stringEnums=true,enumPropertyNaming=camelCase,supportsES6=true,withInterfaces=true --remove-operation-id-prefix -o projects/c4-soft/third-party-bff-api",
+    "third-party-bff-api:build": "npm run ng -- build @c4-soft/third-party-bff-api --configuration production",
+    "third-party-bff-api": "npm run third-party-bff-api:generate && npm run third-party-bff-api:build",
+    "ui-bff-api:generate": "npx openapi-generator-cli generate -i ../ui-bff.openapi.json -g typescript-angular --type-mappings AnyType=any --additional-properties=serviceSuffix=Api,npmName=@c4-soft/ui-bff-api,npmVersion=0.0.1,stringEnums=true,enumPropertyNaming=camelCase,supportsES6=true,withInterfaces=true --remove-operation-id-prefix -o projects/c4-soft/ui-bff-api",
+    "ui-bff-api:build": "npm run ng -- build @c4-soft/ui-bff-api --configuration production",
+    "ui-bff-api": "npm run ui-bff-api:generate && npm run ui-bff-api:build",
+    "users-api:generate": "npx openapi-generator-cli generate -i ../users-api.openapi.json -g typescript-angular --type-mappings AnyType=any --additional-properties=serviceSuffix=Api,npmName=@c4-soft/users-api,npmVersion=0.0.1,stringEnums=true,enumPropertyNaming=camelCase,supportsES6=true,withInterfaces=true --remove-operation-id-prefix -o projects/c4-soft/users-api",
+    "users-api:build": "npm run ng -- build @c4-soft/users-api --configuration production",
+    "users-api": "npm run users-api:generate && npm run users-api:build",
+    "postinstall": "npm run third-party-bff-api && npm run ui-bff-api && npm run users-api"
+  },
+  "prettier": {
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^20.1.0",
+    "@angular/compiler": "^20.1.0",
+    "@angular/core": "^20.1.0",
+    "@angular/forms": "^20.1.0",
+    "@angular/platform-browser": "^20.1.0",
+    "@angular/router": "^20.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^20.1.4",
+    "@angular/build": "^20.1.4",
+    "@angular/cli": "^20.1.4",
+    "@angular/compiler-cli": "^20.1.0",
+    "@openapitools/openapi-generator-cli": "^2.21.4",
+    "@types/jasmine": "~5.1.0",
+    "jasmine-core": "~5.8.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "ng-packagr": "^20.1.0",
+    "typescript": "~5.8.2"
+  }
+}

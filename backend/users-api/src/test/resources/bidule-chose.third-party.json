@@ -1,0 +1,26 @@
+{
+  "iat": 1751562449,
+  "exp": 1751572449,
+  "iss": "https://localhost/auth/realms/sample",
+  "aud": "account",
+  "sub": "787e157c-2b81-4d6e-b6aa-939d1cfb2114",
+  "azp": "third-party",
+  "resource_access": {
+    "ui": {
+      "roles": [
+        "trainee"
+      ]
+	  },
+    "third-party": {
+      "roles": [
+      ]
+    }
+  },
+  "scope": "openid email profile",
+  "email_verified": true,
+  "name": "Bidule Chose",
+  "preferred_username": "bidule@chose.pf",
+  "given_name": "Bidule",
+  "family_name": "Chose",
+  "email": "bidule@chose.pf"
+}

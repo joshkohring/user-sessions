@@ -1,0 +1,8 @@
+${AnsiColor.BLUE}   _    _ _____      ____  ______ ______ 
+${AnsiColor.BLUE}  | |  | |_   _|    |  _ \|  ____|  ____|
+${AnsiColor.BLUE}  | |  | | | |______| |_) | |__  | |__   
+${AnsiColor.BLUE}  | |  | | | |______|  _ <|  __| |  __|  
+${AnsiColor.BLUE}  | |__| |_| |_     | |_) | |    | |     
+${AnsiColor.BLUE}   \____/|_____|    |____/|_|    |_|     
+${AnsiColor.RED}Spring Boot ${spring-boot.formatted-version}
+${AnsiColor.BLACK}

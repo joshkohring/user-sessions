@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.5.4</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.c4-soft.rest-backend</groupId>
+	<artifactId>rest-backend-parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>Parent pom for a REST backend</description>
+	<packaging>pom</packaging>
+	<url />
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>ch4mpy</id>
+			<name>Jérôme Wacongne</name>
+			<email>ch4mp@c4-soft.com</email>
+			<url>https://github.com/ch4mpy</url>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
+	</scm>
+
+	<properties>
+		<java.version>24</java.version>
+		<spring-cloud.version>2025.0.0</spring-cloud.version>
+
+		<com.c4-soft.springaddons.version>8.1.21</com.c4-soft.springaddons.version>
+
+		<openapi-generator-maven-plugin.version>7.13.0</openapi-generator-maven-plugin.version>
+		<swagger-annotations.version>2.2.34</swagger-annotations.version>
+		<springdoc-openapi.version>2.8.9</springdoc-openapi.version>
+		<springdoc-openapi-maven-plugin.version>1.5</springdoc-openapi-maven-plugin.version>
+		<integration-tests.scheme>http</integration-tests.scheme>
+		<integration-tests.hostname>localhost</integration-tests.hostname>
+		<integration-tests.port>7080</integration-tests.port>
+		<springdoc-openapi.output-dir>${project.basedir}/../../</springdoc-openapi.output-dir>
+		<fmt-maven-plugin>2.23</fmt-maven-plugin>
+		<therapi.version>0.15.0</therapi.version>
+
+		<ca-certificates.binding>${project.basedir}/../../certs/tls.jks</ca-certificates.binding>
+
+		<imageName>user-session-${project.name}:${project.version}</imageName>
+
+		<testcontainers-keycloak.version>3.7.0</testcontainers-keycloak.version>
+		<wiremock-spring-boot.version>3.10.0</wiremock-spring-boot.version>
+	</properties>
+
+	<modules>
+		<module>ui-bff</module>
+		<module>third-party-bff</module>
+		<module>users-api</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>io.swagger.core.v3</groupId>
+				<artifactId>swagger-annotations</artifactId>
+				<version>${swagger-annotations.version}</version>
+			</dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-javadoc</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-common</artifactId>
+				<version>${springdoc-openapi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+				<version>${springdoc-openapi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+				<version>${springdoc-openapi.version}</version>
+			</dependency>
+			<dependency>
+    			<groupId>com.github.therapi</groupId>
+    			<artifactId>therapi-runtime-javadoc</artifactId>
+    			<version>${therapi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.c4-soft.springaddons</groupId>
+				<artifactId>spring-addons-starter-oidc</artifactId>
+				<version>${com.c4-soft.springaddons.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.c4-soft.springaddons</groupId>
+				<artifactId>spring-addons-starter-oidc-test</artifactId>
+				<version>${com.c4-soft.springaddons.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.c4-soft.springaddons</groupId>
+				<artifactId>spring-addons-starter-rest</artifactId>
+				<version>${com.c4-soft.springaddons.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.c4-soft.springaddons</groupId>
+				<artifactId>spring-addons-starter-openapi</artifactId>
+				<version>${com.c4-soft.springaddons.version}</version>
+			</dependency>
+
+            <dependency>
+                <groupId>com.github.dasniko</groupId>
+                <artifactId>testcontainers-keycloak</artifactId>
+                <version>${testcontainers-keycloak.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wiremock.integrations</groupId>
+                <artifactId>wiremock-spring-boot</artifactId>
+                <version>${wiremock-spring-boot.version}</version>
+            </dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+							</path>
+							<path>
+								<groupId>org.springframework.boot</groupId>
+								<artifactId>spring-boot-configuration-processor</artifactId>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<configuration>
+						<image>
+							<bindings>
+								<binding>${ca-certificates.binding}:/platform/bindings/ca-certificates:ro</binding>
+							</bindings>
+							<env>
+								<BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+							</env>
+						</image>
+						<imageName>${imageName}</imageName>
+						<excludes>
+							<exclude>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+							</exclude>
+						</excludes>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.springdoc</groupId>
+					<artifactId>springdoc-openapi-maven-plugin</artifactId>
+					<version>${springdoc-openapi-maven-plugin.version}</version>
+					<configuration>
+						<apiDocsUrl>${integration-tests.scheme}://${integration-tests.hostname}:${integration-tests.port}/v3/api-docs</apiDocsUrl>
+						<outputFileName>${project.artifactId}.openapi.json</outputFileName>
+						<outputDir>${springdoc-openapi.output-dir}</outputDir>
+						<skip>false</skip>
+					</configuration>
+				</plugin>
+				<plugin>
+                    <groupId>org.openapitools</groupId>
+                    <artifactId>openapi-generator-maven-plugin</artifactId>
+                    <version>${openapi-generator-maven-plugin.version}</version>
+                    <configuration>
+                        <generatorName>spring</generatorName>
+                        <cleanupOutput>true</cleanupOutput>
+                        <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
+                        <generateApiTests>false</generateApiTests>
+                        <generateModelDocumentation>false</generateModelDocumentation>
+                        <generateModelTests>false</generateModelTests>
+                        <generateSupportingFiles>false</generateSupportingFiles>
+                        <configOptions>
+                            <documentationProvider>none</documentationProvider>
+                            <annotationLibrary>none</annotationLibrary>
+                            <ensureUniqueParams>true</ensureUniqueParams>
+                            <generateBuilders>false</generateBuilders>
+                            <interfaceOnly>true</interfaceOnly>
+                            <library>spring-http-interface</library>
+                            <openApiNullable>false</openApiNullable>
+                            <serializableModel>true</serializableModel>
+                            <skipDefaultInterface>true</skipDefaultInterface>
+                            <useJakartaEe>true</useJakartaEe>
+                            <useOptional>true</useOptional>
+                        </configOptions>
+                    </configuration>
+				</plugin>
+                <plugin>
+                    <groupId>com.spotify.fmt</groupId>
+                    <artifactId>fmt-maven-plugin</artifactId>
+                    <version>${fmt-maven-plugin}</version>
+                </plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+    
+    <profiles>
+        <profile>
+            <id>openapi</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                </path>
+                                <path>
+                                    <groupId>org.springframework.boot</groupId>
+                                    <artifactId>spring-boot-configuration-processor</artifactId>
+                                </path>
+                                <path>
+                                    <groupId>com.github.therapi</groupId>
+                                    <artifactId>therapi-runtime-javadoc-scribe</artifactId>
+                                    <version>${therapi.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

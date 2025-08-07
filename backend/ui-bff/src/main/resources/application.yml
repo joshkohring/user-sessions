@@ -1,0 +1,118 @@
+ui-bff-client-id: ui
+ui-bff-client-secret: secret
+realm-name: sample
+reverse-proxy-uri: https://localhost
+sso-issuer: ${reverse-proxy-uri}/auth/realms/${realm-name}
+users-internal-uri: https://localhost:8081
+
+server:
+  port: 7080
+  error:
+    include-message: always
+  servlet:
+    context-path: /ui/bff
+  ssl:
+    enabled: true
+    bundle: self-signed
+
+spring:
+  application:
+    name: ui-bff
+  security:
+    oauth2:
+      client:
+        provider:
+          sso:
+            issuer-uri: ${sso-issuer}
+        registration:
+          ui:
+            provider: sso
+            client-id: ${ui-bff-client-id}
+            client-secret: ${ui-bff-client-secret}
+            authorization-grant-type: authorization_code
+            scope: openid, profile, email
+  ssl:
+    bundle:
+      pem:
+        self-signed:
+          keystore:
+            certificate: classpath:tls.crt
+            private-key: classpath:tls.key
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+          - id: users-api
+            uri: ${users-internal-uri}
+            predicates:
+            - Path=/users/** 
+            filters:
+            # replace the session cookie with the access token in session
+            - TokenRelay=
+            # remove the ${server.servlet.context-path} prefix
+            - StripPrefix=2
+            
+com:
+  c4-soft:
+    springaddons:
+      oidc:
+        ops:
+        - iss: ${sso-issuer}
+        client:
+          pkce-forced: true
+          post-login-allowed-uri-patterns:
+          - ${reverse-proxy-uri}/ui/web(/.*)?
+          post-login-redirect-host: ${reverse-proxy-uri}
+          post-login-redirect-path: /ui/web/
+          post-logout-allowed-uri-patterns:
+          - ${reverse-proxy-uri}/ui/web(/.*)?
+          post-logout-redirect-host: ${reverse-proxy-uri}
+          post-logout-redirect-path: /ui/web/
+          security-matchers:
+          - /login/**
+          - /oauth2/**
+          - /logout/**
+          - /users/**
+          - /session-info
+          permit-all:
+          - /login/**
+          - /oauth2/**
+          - /logout/connect/back-channel/ui
+          - /users/**
+          - /session-info
+          csrf: cookie-accessible-from-js
+          # the CSRF cookie must be accessible to both the BFF and the SPA code
+          # while not colliding with other apps CSRF cookies
+          csrf-cookie-path: /ui
+          oauth2-redirections:
+            authentication-entry-point: UNAUTHORIZED
+            pre-authorization-code: OK
+            rp-initiated-logout: ACCEPTED
+          back-channel-logout:
+            enabled: true
+            internal-logout-uri: ${reverse-proxy-uri}${server.servlet.context-path}/logout/connect/back-channel/ui
+        resourceserver:
+          permit-all:
+          - /v3/api-docs/**
+          - /actuator/health/readiness
+          - /actuator/health/liveness
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    org.springframework: DEBUG

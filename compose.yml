@@ -1,0 +1,89 @@
+name: user-session
+
+volumes:
+  user-session.kc_data:
+
+services:
+
+  user-session.keycloak-db:
+    container_name: ${KC_DB_HOST}
+    image: postgres
+    command:
+      - -p ${KC_DB_PORT}
+    restart: unless-stopped
+    ports:
+      - "${KC_DB_PORT}:${KC_DB_PORT}"
+    environment:
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+      POSTGRES_USER: ${KC_DB_USERNAME}
+      POSTGRES_DB: ${KC_DB_NAME}
+    volumes:
+      -  user-session.kc_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${KC_DB_NAME} -U ${KC_DB_USERNAME} -p ${KC_DB_PORT}"]
+      interval: 3s
+      timeout: 60s
+      retries: 20
+
+  user-session.keycloak-server:
+    container_name: user-session.keycloak-server
+    image: quay.io/keycloak/keycloak:26.2
+    command:
+      - start
+      - --db-username=${KC_DB_USERNAME}
+      - --db-password=${KC_DB_PASSWORD}
+      - --https-certificate-file=/opt/keycloak/certs/tls.crt
+      - --https-certificate-key-file=/opt/keycloak/certs/tls.key
+      - --import-realm
+    ports:
+      - ${KC_HTTPS_PORT}:8443
+    volumes:
+      - ./certs/:/opt/keycloak/certs/
+      - ./keycloak/import/:/opt/keycloak/data/import/
+      - ./keycloak/providers/:/opt/keycloak/providers/
+    depends_on:
+      user-session.keycloak-db:
+        condition: service_healthy
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_DB: ${KC_DB}
+      KC_DB_URL: ${KC_DB_URL}
+      KC_HEALTH_ENABLED: true
+      KC_HTTP_ENABLED: false
+      KC_HTTP_RELATIVE_PATH: ${KC_HTTP_RELATIVE_PATH}
+      KC_HOSTNAME: https://${HOST_NAME}${KC_HTTP_RELATIVE_PATH}
+      KC_HOSTNAME_ADMIN: https://${HOST_NAME}${KC_HTTP_RELATIVE_PATH}
+      KC_LOG_LEVEL: ${KC_LOG_LEVEL}
+      KC_METRICS_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    healthcheck:
+      test: ["CMD-SHELL",
+        "exec 3<>/dev/tcp/localhost/9000; \
+        echo -en 'GET /health/ready' >&3; \
+        # Give the server a moment to respond, then search for 'UP'
+        if timeout 3 cat <&3 | grep -m 1 'UP'; then \
+          exec 3<&-; exec 3>&-; exit 0; \
+        else \
+          exec 3<&-; exec 3>&-; exit 1; \
+        fi"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+     
+
+  user-session.reverse-proxy:
+    container_name: user-session.reverse-proxy
+    image: user-session/nginx-reverse-proxy
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+      - ./certs/:/etc/nginx/certs/
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    depends_on:
+      user-session.keycloak-server:
+        condition: service_healthy

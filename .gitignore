@@ -1,0 +1,15 @@
+**/.classpath
+**/.dbeaver
+**/.DS_Store
+**/.idea
+**/.metadata
+**/.project
+**/.settings
+**/.vscode
+**/target/
+
+.env
+
+certs/*
+
+*.openapi.json

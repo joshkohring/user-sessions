@@ -1,0 +1,14 @@
+README.md
+api.base.service.ts
+api.module.ts
+api/api.ts
+api/uiBffSessions.service.ts
+api/uiBffSessions.serviceInterface.ts
+configuration.ts
+encoder.ts
+index.ts
+model/models.ts
+model/sessionInfo.ts
+param.ts
+provide-api.ts
+variables.ts

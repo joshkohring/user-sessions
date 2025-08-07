@@ -1,0 +1,68 @@
+realm-name: sample
+reverse-proxy-uri: https://localhost
+sso-issuer: ${reverse-proxy-uri}/auth/realms/${realm-name}
+
+
+server:
+  port: 8081
+  error:
+    include-message: always
+  ssl:
+    enabled: true
+    bundle: self-signed
+    
+
+spring:
+  application:
+    name: users-api
+  config:
+    import:
+    - optional:configtree:/workspace/config/
+    - optional:configtree:/workspace/secret/
+  ssl:
+    bundle:
+      pem:
+        self-signed:
+          keystore:
+            certificate: classpath:tls.crt
+            private-key: classpath:tls.key
+
+com:
+  c4-soft:
+    springaddons:
+      oidc:
+        ops:
+        - iss: ${sso-issuer}
+          authorities:
+          - path: $.realm_access.roles
+            prefix: 'realm.'
+          - path: $.resource_access.ui.roles
+            prefix: 'ui.'
+          - path: $.resource_access.third-party.roles
+            prefix: 'third-party.'
+        resourceserver:
+          permit-all:
+          - /users/me
+          - /v3/api-docs/**
+          - /actuator/health/readiness
+          - /actuator/health/liveness
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    org.springframework: DEBUG
+

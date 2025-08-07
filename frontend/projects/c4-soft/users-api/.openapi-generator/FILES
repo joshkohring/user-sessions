@@ -1,0 +1,14 @@
+README.md
+api.base.service.ts
+api.module.ts
+api/api.ts
+api/users.service.ts
+api/users.serviceInterface.ts
+configuration.ts
+encoder.ts
+index.ts
+model/currentUser.ts
+model/models.ts
+param.ts
+provide-api.ts
+variables.ts
