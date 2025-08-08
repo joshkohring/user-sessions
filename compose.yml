@@ -38,7 +38,9 @@ services:
     ports:
       - ${KC_HTTPS_PORT}:8443
     volumes:
-      - ./certs/:/opt/keycloak/certs/
+      - ./certs/tls.crt:/opt/keycloak/certs/tls.crt
+      - ./certs/tls.key:/opt/keycloak/certs/tls.key
+      - ./certs/tls.crt:/opt/keycloak/conf/truststores/tls.crt
       - ./keycloak/import/:/opt/keycloak/data/import/
       - ./keycloak/providers/:/opt/keycloak/providers/
     depends_on:

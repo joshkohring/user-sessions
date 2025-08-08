@@ -40,7 +40,7 @@ Copy the dev machine self-signed certificates to the `certs` directory. The file
 sh ./setup.sh
 docker compose up -d
 cd backend
-mvn install -Popenapi
+sh ./mvnw install -Popenapi
 cd ../frontend
 npm i
 ```
