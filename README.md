@@ -48,11 +48,11 @@ npm i
 ## 2. Notes
 
 ### 2.1. Sessions
-An identified user has up to 3 distinct sessions. 
+An identified user has up to 3 distinct sessions: one on Keycloak and one on each Spring client with `oauth2Login` (BFFs).
 
-The most important session is Keycloak's one. It is the reference for the user state (logged in or not). When SSO is enabled, once the user is logged in and as long as the Keycloak session is active, further authorization code flows complete silently.
+**The most important session is Keycloak's one.** It is the reference for the user state (logged in or not). When SSO is enabled, once the user is logged in and as long as the Keycloak session is active, further authorization code flows complete silently: it is possible to rebuild a BFF session without prompting the user for his credentials.
 
-The user also have a session on each application with `oauth2Login` (the BFFs). These sessions hold the OAuth2 tokens (access, refresh, and ID). When such a session is invalidated, the tokens it contain are deleted. But as seen above, if the user's Keycloak session is still active, a new BFF session can be built and populated with tokens, without the user being prompted for credentials.
+The BFFs sessions hold the OAuth2 tokens (access, refresh, and ID). When such a session is invalidated, the tokens it contain are deleted.
 
 Each session having its own cookie which is pretty sensitive credentials, these cookies should:
 - be flagged `HttpOnly`: hidden from the SPA (and dependencies) JavaScript code
@@ -79,9 +79,16 @@ OpenID specifies two main logout mechanisms:
   3. the RP redirects the user agent to the OpenID Provider `end_session_endpoint` with the ID token as credentials and a post-logout URI
   4. the OP ends its session for the user
   5. the OP redirects the user agent to the provided post-logout URI
-- Back-Channel Logout, where the OP notifies each RP for which it has a callback URL that a user session ends. This enables to end almost instantly the session of a user on all RPs after he logged out from one. But as this direct server-to-server communication, it is possible only with clients running on a backend.
+- Back-Channel Logout, where the OP notifies each RP for which it has a callback URL that a user session ends. This enables to end almost instantly the session of a user on all RPs after he logged out from one. But as this direct server-to-server communication, it is possible only with clients running on a backend. A special care must be taken with Keycloak which sends Back-Channel Logout events to clients only in the case of an explicit logout, but not in case of a session expiration or revocation using the admin console: [gh-25171]( https://github.com/keycloak/keycloak/issues/25171).
 
 ### 2.4. Frontend State
+The refresh token `exp` claim contains the instant at which the user's session on Keycloak expires (Epoch seconds). In the companion project, the BFFs expose this value. Front-ends display a popup 30s before the user session expire and, in case of a user interaction, send a `/ping` request to keep the session alive. Otherwise (no user interaction), the front-ends switch to the logged out state.
+
 When the Back-Channel Logout is correctly configured, a BFF session can end before the tokens expire. If tokens are not exposed to the frontend, the access to REST resources is instantly revoked: tokens are not invalidated, but they are deleted with the BFF session.
 
-However, for best user experience in SSO systems, we should use a messaging system (websockets or whatever) to notify the frontend when a BFF session is ended because of an external event.
+However, for best user experience in SSO systems, we should use a messaging bus (websockets or whatever) to notify the frontend when a BFF session ended before expiration because of an external event.
+
+### 2.5. `401` interceptor
+In the case of an invalid BFF session, missing tokens, etc., the REST request from the frontend fail with a `401`.
+
+The front-ends register a request interceptor to intercept this `Unauthorized` errors and trigger user login. In the case were the user session on Keycloak is still valid, this authorization code flow completes silently (the user is not prompted for credentials).

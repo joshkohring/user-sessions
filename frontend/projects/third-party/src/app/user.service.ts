@@ -1,102 +1,120 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal, WritableSignal } from '@angular/core';
-import { UsersApi } from '@c4-soft/users-api';
-import { finalize, interval, Subscription, take, timer } from 'rxjs';
+import { Injectable } from '@angular/core';
+import {
+  MatDialog,
+  MatDialogRef,
+  MatDialogState,
+} from '@angular/material/dialog';
+import {
+  SessionInfo,
+  ThirdPartyBffSessionsApi,
+} from '@c4-soft/third-party-bff-api';
+import { PingApi, UsersApi } from '@c4-soft/users-api';
+import { finalize, timer } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
+import { AboutToExpireDialog } from './about-to-expire.dialog';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
   private user$ = new BehaviorSubject<User>(User.ANONYMOUS);
-  private userEventsSubscription?: Subscription;
+  private sessionInfo$ = new BehaviorSubject<SessionInfo>({ name: '' });
+  private aboutToExpireDialog?: MatDialogRef<AboutToExpireDialog>;
 
-  private readonly defaultExp = 30000;
-  private refreshInTimerSubscription?: Subscription;
-
-  keepAlive = signal(true);
-  refreshIn: WritableSignal<number | null> = signal(null);
-
-  constructor(private usersApi: UsersApi, private http: HttpClient) {
+  constructor(
+    private usersApi: UsersApi,
+    private pingApi: PingApi,
+    private sessionsApi: ThirdPartyBffSessionsApi,
+    private http: HttpClient,
+    private dialog: MatDialog
+  ) {
     this.refresh();
   }
 
-  refresh(isKeepAlive = false): void {
-    this.userEventsSubscription?.unsubscribe();
-    this.refreshInTimerSubscription?.unsubscribe();
-
-    if (isKeepAlive && !this.keepAlive) {
-      return;
-    }
-
+  refresh(): void {
     this.usersApi.getMe().subscribe({
       next: (user) => {
-        const now = new Date().getTime();
-        const exp =
-          user.exp && user.exp <= Number.MAX_SAFE_INTEGER
-            ? user.exp * 1000
-            : now + 2 * this.defaultExp;
-        this.user$.next(
-          user.sub
-            ? new User(
-                user.sub,
-                user.preferredUsername,
-                user.roles || [],
-                user.email || null,
-                new Date(exp)
-              )
-            : User.ANONYMOUS
-        );
-        const millis = exp - now - this.defaultExp;
-        if (this.keepAlive() && millis > 0) {
-          this.refreshIn.set(millis);
-          this.countDown();
-          this.userEventsSubscription = interval(millis)
-            .pipe(take(1))
-            .subscribe(() => this.refresh(true));
+        if (!user.sub) {
+          this.user$.next(User.ANONYMOUS);
+        } else {
+          this.user$.next(
+            new User(
+              user.sub,
+              user.preferredUsername,
+              user.roles || [],
+              user.email || null
+            )
+          );
+          this.refreshSessionInfo();
         }
       },
       error: (error) => {
         console.warn(error);
         this.user$.next(User.ANONYMOUS);
-        this.userEventsSubscription = interval(this.defaultExp)
-          .pipe(take(1))
-          .subscribe(() => this.refresh());
       },
     });
   }
 
-  private countDown() {
-    this.refreshInTimerSubscription = timer(1000).subscribe(() => {
-      if (this.refreshIn() !== null) {
-        this.refreshIn.set(this.refreshIn()! - 1000);
-        if (this.refreshIn()! < 1) {
-          this.refreshIn.set(null);
-        } else {
-          this.countDown();
+  refreshSessionInfo() {
+    this.sessionsApi.getSessionInfo().subscribe({
+      next: (sessionInfo) => {
+        this.sessionInfo$.next(sessionInfo);
+        if (sessionInfo.name) {
+          const now = Date.now();
+          const userSessionExpiresIn = Math.round(
+            (sessionInfo.userSessionExp || 0) * 1000 - now
+          );
+          if (userSessionExpiresIn > 0) {
+            if (userSessionExpiresIn > 30000) {
+              timer(userSessionExpiresIn - 30000).subscribe(() => {
+                if (
+                  !this.aboutToExpireDialog ||
+                  this.aboutToExpireDialog?.getState() === MatDialogState.CLOSED
+                ) {
+                  this.aboutToExpireDialog =
+                    this.dialog.open(AboutToExpireDialog);
+                  this.aboutToExpireDialog
+                    .afterClosed()
+                    .subscribe((keepAlive) => {
+                      if (keepAlive) {
+                        this.pingApi.ping().subscribe({
+                          next: () => {
+                            this.refreshSessionInfo();
+                          },
+                          error: () => {
+                            if (this.current.isAuthenticated) {
+                              this.user$.next(User.ANONYMOUS);
+                            }
+                            this.refreshSessionInfo();
+                          },
+                        });
+                      } else {
+                        this.logout(false);
+                      }
+                    });
+                }
+              });
+            }
+            timer(userSessionExpiresIn).subscribe(() =>
+              this.aboutToExpireDialog?.close()
+            );
+          }
         }
-      }
+      },
+      error: (error) => {
+        console.warn(error);
+        this.sessionInfo$.next({ name: '' });
+        this.user$.next(User.ANONYMOUS);
+      },
     });
   }
 
   login() {
-    const currentRoute = location.toString();
-    this.http
-      .get('/third-party/bff/oauth2/authorization/third-party', {
-        headers: {
-          'X-RESPONSE-STATUS': '200',
-          'X-POST-LOGIN-SUCCESS-URI': currentRoute,
-          'X-POST-LOGIN-FAILURE-URI': currentRoute,
-        },
-        observe: 'response',
-      })
-      .subscribe((resp) => {
-        const location = resp.headers.get('Location');
-        if (!!location) {
-          window.location.href = location;
-        }
-      });
+    window.location.href =
+      '/third-party/bff/oauth2/authorization/third-party?post_login_success_uri=' +
+      encodeURIComponent(location.toString());
   }
 
   private getXsrfToken(): string {
@@ -108,8 +126,7 @@ export class UserService {
     return xsrfToken;
   }
 
-  logout() {
-    this.userEventsSubscription?.unsubscribe();
+  logout(followToOp = true) {
     this.http
       .post('/third-party/bff/logout', null, {
         headers: { 'X-XSRF-TOKEN': this.getXsrfToken() },
@@ -122,7 +139,7 @@ export class UserService {
       )
       .subscribe((resp) => {
         const logoutUri = resp.headers.get('Location');
-        if (!!logoutUri) {
+        if (followToOp && !!logoutUri) {
           window.location.href = logoutUri;
         }
       });
@@ -132,8 +149,16 @@ export class UserService {
     return this.user$;
   }
 
+  get sessionChanges(): Observable<SessionInfo> {
+    return this.sessionInfo$;
+  }
+
   get current(): User {
     return this.user$.value;
+  }
+
+  get currentSession(): SessionInfo {
+    return this.sessionInfo$.value;
   }
 }
 

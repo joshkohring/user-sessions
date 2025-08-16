@@ -1,80 +1,64 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal, Signal } from '@angular/core';
-import {
-  takeUntilDestroyed,
-  toObservable,
-  toSignal,
-} from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Component, signal, Signal, WritableSignal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { RouterOutlet } from '@angular/router';
-import { SessionInfo, UiBffSessionsApi } from '@c4-soft/ui-bff-api';
-import { interval, map, mergeMap, Observable } from 'rxjs';
+import { SessionInfo } from '@c4-soft/ui-bff-api';
+import { PingApi } from '@c4-soft/users-api';
+import { interval, map, Observable } from 'rxjs';
 import { User, UserService } from './user.service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, ReactiveFormsModule, RouterOutlet],
+  imports: [CommonModule, ReactiveFormsModule, RouterOutlet, MatButtonModule],
   template: `
     <h1>UI</h1>
-    <p>{{ clock() | date : DATE_FMT }}</p>
-
-    @if (currentUser()?.isAuthenticated) {
-    <h2>User</h2>
-    <p>{{ currentUser()?.name }}</p>
-    <p>
-      <span>Access until: </span>
-      <span>{{ currentUser()?.accessUntil | date : DATE_FMT }}</span>
-    </p>
-
-    <h2>BFF session</h2>
     <table>
       <tr>
-        <td>ID:</td>
-        <td>{{ sessionInfo()?.sessionId }}</td>
+        <td>user</td>
+        <td>{{ currentUser()?.name }}</td>
       </tr>
       <tr>
-        <td>creation:</td>
-        <td>{{ toDate(sessionInfo()?.createdAt) | date : DATE_FMT }}</td>
+        <td>session ID</td>
+        <td>{{ (sessionInfo$ | async)?.sessionId }}</td>
       </tr>
       <tr>
-        <td>last access:</td>
-        <td>{{ toDate(sessionInfo()?.lastAccessedAt) | date : DATE_FMT }}</td>
+        <td>User session expires in:</td>
+        <td>{{ userSessionExpiresIn() }}@if(userSessionExpiresIn()) { s}</td>
       </tr>
       <tr>
-        <td>max inactive interval:</td>
-        <td>
-          {{ sessionInfo()?.maxInactiveInterval }}s ({{
-            maxInactiveMinutes()
-          }}
-          minutes)
-        </td>
+        <td>BFF session expires in:</td>
+        <td>{{ bffSessionExpiresIn() }}@if(bffSessionExpiresIn()) { s}</td>
       </tr>
       <tr>
-        <td>access token issued at:</td>
-        <td>{{ toDate(sessionInfo()?.accessIat) | date : DATE_FMT }}</td>
+        <td>Access token expires in:</td>
+        <td>{{ accessTokenExpiresIn() }}@if(accessTokenExpiresIn()) { s}</td>
       </tr>
       <tr>
-        <td>access token expires at:</td>
-        <td>{{ toDate(sessionInfo()?.accessExp) | date : DATE_FMT }}</td>
+        <td>Session last accessed at:</td>
+        <td>{{ bffSessionLastAccessed() | date : DATE_FMT }}</td>
       </tr>
       <tr>
-        <td>refresh token issued at:</td>
-        <td>{{ toDate(sessionInfo()?.refreshIat) | date : DATE_FMT }}</td>
-      </tr>
-      <tr>
-        <td>refresh token expires at:</td>
-        <td>{{ toDate(sessionInfo()?.refreshExp) | date : DATE_FMT }}</td>
+        <td>current time</td>
+        <td>{{ clock() | date : DATE_FMT }}</td>
       </tr>
     </table>
 
-    <h2>Keep alive</h2>
-    <p>
-      <input type="checkbox" [formControl]="keepAliveControl" />
-      refresh in {{ refreshIn$ | async }}s
-    </p>
-    <button (click)="user.logout()">Logout</button>
+    @if (currentUser()?.isAuthenticated) {
+    <div class="mt-2">
+      <button mat-button (click)="ping()">Ping</button> uses an access token
+      (refreshes it if expired or expires within the current minute)
+      <div>{{ message() }}</div>
+    </div>
+    <div class="mt-2">
+      <button mat-button(click)="user.refreshSessionInfo()">
+        Force user session info refresh
+      </button>
+    </div>
+    <button mat-button (click)="user.logout()">Logout</button>
     } @else {
-    <button (click)="user.login()">Login</button>
+    <button mat-button (click)="user.login()">Login</button>
     }
 
     <router-outlet />
@@ -84,45 +68,73 @@ import { User, UserService } from './user.service';
 export class App {
   protected readonly DATE_FMT = 'yyyy MM dd HH:mm:ss z';
   protected readonly currentUser: Signal<User | undefined>;
-  protected readonly keepAliveControl = new FormControl(true);
   protected readonly clock = signal(new Date());
-  protected refreshIn$: Observable<number | null>;
-  protected sessionInfo: Signal<SessionInfo | undefined> = signal(undefined);
-  protected maxInactiveMinutes: Signal<number | undefined>;
+  protected readonly userSessionExpiresIn: WritableSignal<number | undefined> =
+    signal(undefined);
+  protected readonly bffSessionExpiresIn: WritableSignal<number | undefined> =
+    signal(undefined);
+  protected readonly accessTokenExpiresIn: WritableSignal<number | undefined> =
+    signal(undefined);
+  protected readonly sessionInfo$: Observable<SessionInfo>;
+  protected readonly message = signal<string>('');
+  protected readonly bffSessionLastAccessed: Signal<Date | undefined>;
 
-  constructor(readonly user: UserService, sessionInfoApi: UiBffSessionsApi) {
+  constructor(readonly user: UserService, readonly pingApi: PingApi) {
     this.currentUser = toSignal(user.valueChanges);
-    this.keepAliveControl.setValue(user.keepAlive());
-    this.keepAliveControl.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe((keepAlive) => {
-        this.user.keepAlive.set(keepAlive || false);
-        this.user.refreshIn.set(null);
-        this.user.refresh(true);
-      });
+
     interval(1000)
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        this.clock.set(new Date());
+        const now = new Date();
+        this.clock.set(now);
+        this.userSessionExpiresIn.set(
+          user.currentSession?.userSessionExp
+            ? Math.round(
+                user.currentSession.userSessionExp - now.getTime() / 1000
+              )
+            : undefined
+        );
+        this.bffSessionExpiresIn.set(
+          user.currentSession?.bffSessionExp
+            ? Math.round(
+                user.currentSession.bffSessionExp - now.getTime() / 1000
+              )
+            : undefined
+        );
+        this.accessTokenExpiresIn.set(
+          user.currentSession?.accessTokenExp
+            ? Math.round(
+                user.currentSession.accessTokenExp - now.getTime() / 1000
+              )
+            : undefined
+        );
       });
-    this.refreshIn$ = toObservable(user.refreshIn).pipe(
-      map((r) => (r ? Math.round(r / 1000) : null))
-    );
 
-    this.sessionInfo = toSignal(
-      user.valueChanges.pipe(
-        mergeMap((user) => sessionInfoApi.getSessionInfo())
+    this.sessionInfo$ = user.sessionChanges;
+    this.bffSessionLastAccessed = toSignal(
+      user.sessionChanges.pipe(
+        map((sessionInfo) => this.toDate(sessionInfo.bffSessionLastAccessed))
       )
     );
-    this.maxInactiveMinutes = computed(() => {
-      const maxInactiveInterval = this.sessionInfo()?.maxInactiveInterval;
-      return maxInactiveInterval
-        ? Math.round(maxInactiveInterval / 60)
-        : undefined;
+  }
+
+  ping() {
+    this.message.set('Pinging...');
+
+    this.pingApi.ping().subscribe({
+      next: (pong) => {
+        this.message.set(pong.message || '');
+        this.user.refreshSessionInfo();
+      },
+      error: (error) => {
+        console.warn(error);
+        this.message.set('error');
+        this.user.refreshSessionInfo();
+      },
     });
   }
 
-  protected toDate(millis: number | undefined): Date | undefined {
-    return millis ? new Date(millis) : undefined;
+  protected toDate(seconds: number | undefined): Date | undefined {
+    return seconds ? new Date(seconds * 1000) : undefined;
   }
 }

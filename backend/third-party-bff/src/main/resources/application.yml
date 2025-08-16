@@ -11,6 +11,10 @@ server:
     include-message: always
   servlet:
     context-path: /third-party/bff
+    session:
+      timeout: 180 
+      cookie:
+        max-age: 180
   ssl:
     enabled: true
     bundle: self-signed
@@ -52,6 +56,15 @@ spring:
             - TokenRelay=
             # remove the ${server.servlet.context-path} prefix
             - StripPrefix=2
+          - id: ping-api
+            uri: ${users-internal-uri}
+            predicates:
+            - Path=/ping
+            filters:
+            # replace the session cookie with the access token in session
+            - TokenRelay=
+            # remove the ${server.servlet.context-path} prefix
+            - StripPrefix=2
             
 com:
   c4-soft:
@@ -75,22 +88,24 @@ com:
           - /logout/**
           - /users/**
           - /session-info
+          - /ping
           permit-all:
           - /login/**
           - /oauth2/**
           - /logout/connect/back-channel/third-party
           - /session-info
           - /users/**
+          - /ping
           csrf: cookie-accessible-from-js
           # the CSRF cookie must be accessible to both the BFF and the SPA code
           # while not colliding with other apps CSRF cookies
           csrf-cookie-path: /third-party
           oauth2-redirections:
             authentication-entry-point: UNAUTHORIZED
-            pre-authorization-code: OK
+            pre-authorization-code: FOUND
             rp-initiated-logout: ACCEPTED
           back-channel-logout:
-            enabled: false
+            enabled: true
             internal-logout-uri: ${reverse-proxy-uri}${server.servlet.context-path}/logout/connect/back-channel/third-party
         resourceserver:
           permit-all:

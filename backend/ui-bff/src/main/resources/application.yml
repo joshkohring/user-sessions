@@ -52,6 +52,15 @@ spring:
             - TokenRelay=
             # remove the ${server.servlet.context-path} prefix
             - StripPrefix=2
+          - id: ping-api
+            uri: ${users-internal-uri}
+            predicates:
+            - Path=/ping
+            filters:
+            # replace the session cookie with the access token in session
+            - TokenRelay=
+            # remove the ${server.servlet.context-path} prefix
+            - StripPrefix=2
             
 com:
   c4-soft:
@@ -75,12 +84,14 @@ com:
           - /logout/**
           - /users/**
           - /session-info
+          - /ping
           permit-all:
           - /login/**
           - /oauth2/**
           - /logout/connect/back-channel/ui
           - /users/**
           - /session-info
+          - /ping
           csrf: cookie-accessible-from-js
           # the CSRF cookie must be accessible to both the BFF and the SPA code
           # while not colliding with other apps CSRF cookies

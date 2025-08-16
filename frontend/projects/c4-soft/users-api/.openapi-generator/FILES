@@ -2,6 +2,8 @@ README.md
 api.base.service.ts
 api.module.ts
 api/api.ts
+api/ping.service.ts
+api/ping.serviceInterface.ts
 api/users.service.ts
 api/users.serviceInterface.ts
 configuration.ts
@@ -9,6 +11,7 @@ encoder.ts
 index.ts
 model/currentUser.ts
 model/models.ts
+model/pingResponse.ts
 param.ts
 provide-api.ts
 variables.ts

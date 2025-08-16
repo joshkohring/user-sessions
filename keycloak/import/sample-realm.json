@@ -16,8 +16,8 @@
   "offlineSessionIdleTimeout" : 1800,
   "offlineSessionMaxLifespanEnabled" : true,
   "offlineSessionMaxLifespan" : 3600,
-  "clientSessionIdleTimeout" : 90,
-  "clientSessionMaxLifespan" : 360,
+  "clientSessionIdleTimeout" : 0,
+  "clientSessionMaxLifespan" : 0,
   "clientOfflineSessionIdleTimeout" : 0,
   "clientOfflineSessionMaxLifespan" : 0,
   "accessCodeLifespan" : 60,
@@ -1407,7 +1407,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "saml-user-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "saml-user-property-mapper" ]
       }
     }, {
       "id" : "226ffa87-d4ee-4394-ab3f-c3255d1e0889",
@@ -1467,7 +1467,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-full-name-mapper" ]
       }
     } ],
     "org.keycloak.keys.KeyProvider" : [ {
@@ -1511,6 +1511,17 @@
         "kid" : [ "1d7a9462-0177-47ac-9d71-c35d8f3bcc3e" ],
         "secret" : [ "IozoEiRunp8kaq_VLW9hxg" ],
         "priority" : [ "100" ]
+      }
+    }, {
+      "id" : "62f65d5c-b603-42cb-b296-db8f036b7bf6",
+      "name" : "fallback-RS512",
+      "providerId" : "rsa-generated",
+      "subComponents" : { },
+      "config" : {
+        "privateKey" : [ "MIIEowIBAAKCAQEAlRJZzIZLpHF4XNsBLCMe3x5hNGOa4LCGMFGqqaaObGCfjjtsOPJ8EpFQQ0dXFBm928JIE4Y28OQ75YiUIPJLddF7Ycra/wnyRAzW0wIA58ipYgkQTNDh417bgRun+19Tv+wSD/32jxuuO6eKjhxAzTqVXqTbGxa/qTRUIWKiubkr+XiMi4SmKttL+ux+OuZ4T1vI9q8ZPtkL42Vz40FjnzwIMXGUnzya94ypcocwOqxIFHb85YNHVu/M2I91XIwOcxkSUmS1LQvZ6/98lZci76kQosnlpaPGNFdGAOFooCXYqCUUtBgu8pckBwvexDRPDI3hdEJxms9kTmxiu5TBjwIDAQABAoIBAAFCZsMlPfharmNNGlpuxYZUXF/emOKzEGnSFs4DcTVAhQ3k5J9/35p3OHqzsexNN18RlMhNcaNhWjwwhjKCZC7PoT+Mli23aMuNtuGQz8R629YkhiBlV13eDElanCBciCRD8KHKnyL1tJLJHJDiHjiy+QC+sHcvHwQP7sdawk3YBlYDChfHkFpBPgYRw+FwwkI/HWxnezsx5rlNcNb5ki4u+zZcOa0mD50KarOcG0htgeGXGHAmo4CyvVaCP05nvYq0F4vMtw7GSF4wn+bYC3Xp1BTq3kImkwiWoJ9KdgWtt/02nVsJY8q/220qf1dGmiHD88pDQT2taoCBU/N1TnkCgYEAyX2CzRs5rqueMki7nRhVLfmhBLrYCehPyN7Um8UefKttn94WTruA+Es8e+s4PWBseaJ8yOpkdgFnbyPrhPj2GhXMssngxOKEtx6qr0Fnke4mjPZxJMxZTBij96yYJE1fYoSG1c2KDDgiRAiXn7sRbEi4k6wyccLAWoUxPhOoCsMCgYEAvWaEaw/4S5QUIPMsvb7cpFdAi24g5lYqqs2fHKozA2y4B9cVl454PTZk8xpucIZZP4by8jXOXvjyO4eFC6ztXgrbcGIEi0SDhnS2oODs/4g8FPm9eBfxTuDT4gSQyjFLxz1izIwzvnu8dhmdeKD5i9K+i3xd6EtZFsTXD1TjCUUCgYEAsdapwEarXtPyyQcRMNLtO6r8x6PyUqxM30pt9R7Cjd7w3w2yOsOcTYp6VBWEige1NpaH9P2Mter/VEUr9y2WaeebyKIOVThpUwcqN41O0KqWNAzASG5k0plc/5nCnyf7bIT0TXkgwzA4bjv3N/BwrFZzM0PlMitmg37Tu6q1wukCgYAwLEwP4x73MjGwc8l0dYAvOJYNILSzgUUW7nfC1bNl8pgYPmeahb0lbJlej+F5M2Kt2sgePPtBgrYx1/VKE/DH06Eew39+YK3HXBY7cxo0oFUPzLmZOxXAR0T9HsYo90Lb6Uwg1KQwlc5Ih5la3i66lp6qYbaM5+U/+k7s8l1QtQKBgEPDY40rKyma1nCyWHcqhoqZsHzcNt7tYvPHrf7tFPZCPz9hM1MHdBDnSVqwCbxvgii71AEmx+INWzWsU6VmktjSXYe+xukmd8gmJct2hoHisyK0ADTT7Z9JZ8u7EEZePII6pyqE77zmS1nVG8Jo6kTRSqgh4X3zMKuI8rQzfPen" ],
+        "certificate" : [ "MIICmzCCAYMCBgGYi3yrQTANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDDAZzYW1wbGUwHhcNMjUwODA4MjA1OTIwWhcNMzUwODA4MjEwMTAwWjARMQ8wDQYDVQQDDAZzYW1wbGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCVElnMhkukcXhc2wEsIx7fHmE0Y5rgsIYwUaqppo5sYJ+OO2w48nwSkVBDR1cUGb3bwkgThjbw5DvliJQg8kt10Xthytr/CfJEDNbTAgDnyKliCRBM0OHjXtuBG6f7X1O/7BIP/faPG647p4qOHEDNOpVepNsbFr+pNFQhYqK5uSv5eIyLhKYq20v67H465nhPW8j2rxk+2QvjZXPjQWOfPAgxcZSfPJr3jKlyhzA6rEgUdvzlg0dW78zYj3VcjA5zGRJSZLUtC9nr/3yVlyLvqRCiyeWlo8Y0V0YA4WigJdioJRS0GC7ylyQHC97ENE8MjeF0QnGaz2RObGK7lMGPAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIH7Tln5Fspkg8bGpJbHbcGd6mkyFID6eay+anPaWi2Hv4F2D9+e0DFs4ainzmg/wmX7WABLgM/v7wNmacOS21CTJL6g7y8P7Cxv1S2czdDSiFrO6PBV25yOCWSbUlb/D1Jl5ZTb5+4U8ThiY7Qsd7Pv7+4JyQdIyaQc0eLtzNU8cdnCLWbwXfwR6J7AJ4rsvWb2lDctXkFuFoyFVBm7b0dQ9ek5s/f9pU/temqR47dSsUWOFyQB+m9Jyk7bmf16YNuvSJZ/+rTmvQsLGGAxG+G3kdqaGk/Xe+2eIGzfaSveo96wp99QGvpleWd8ctq5C5dC3RucQRPETUbKKm2SPDQ=" ],
+        "priority" : [ "-100" ],
+        "algorithm" : [ "RS512" ]
       }
     } ]
   },
@@ -2144,7 +2155,7 @@
     "cibaAuthRequestedUserHint" : "login_hint",
     "clientOfflineSessionMaxLifespan" : "0",
     "oauth2DevicePollingInterval" : "5",
-    "clientSessionIdleTimeout" : "90",
+    "clientSessionIdleTimeout" : "0",
     "actionTokenGeneratedByUserLifespan.verify-email" : "",
     "actionTokenGeneratedByUserLifespan.idp-verify-account-via-email" : "",
     "clientOfflineSessionIdleTimeout" : "0",
@@ -2155,7 +2166,7 @@
     "oauth2DeviceCodeLifespan" : "600",
     "saml.signature.algorithm" : "",
     "parRequestUriLifespan" : "60",
-    "clientSessionMaxLifespan" : "360",
+    "clientSessionMaxLifespan" : "0",
     "frontendUrl" : "",
     "acr.loa.map" : "{}",
     "adminEventsExpiration" : "1800",
