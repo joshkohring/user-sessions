@@ -268,6 +268,7 @@
       "security-admin-console" : [ ],
       "admin-cli" : [ ],
       "account-console" : [ ],
+      "user-service" : [ ],
       "broker" : [ {
         "id" : "79564c42-a7de-483d-9ad0-315d5d9bd625",
         "name" : "read-token",
@@ -445,6 +446,23 @@
     "realmRoles" : [ "default-roles-sample" ],
     "clientRoles" : {
       "ui" : [ "trainee" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "fff80b5c-b5dc-430e-9395-5620c87e4dbe",
+    "username" : "service-account-user-service",
+    "emailVerified" : false,
+    "createdTimestamp" : 1755372705768,
+    "enabled" : true,
+    "totp" : false,
+    "serviceAccountClientId" : "user-service",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-sample" ],
+    "clientRoles" : {
+      "realm-management" : [ "view-users" ]
     },
     "notBefore" : 0,
     "groups" : [ ]
@@ -752,6 +770,47 @@
     "fullScopeAllowed" : true,
     "nodeReRegistrationTimeout" : -1,
     "defaultClientScopes" : [ "web-origins", "acr", "roles", "profile", "basic", "email" ],
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "organization", "microprofile-jwt" ]
+  }, {
+    "id" : "7249fba0-60fb-48ca-ad06-1c73229954ce",
+    "clientId" : "user-service",
+    "name" : "",
+    "description" : "",
+    "rootUrl" : "",
+    "adminUrl" : "",
+    "baseUrl" : "",
+    "surrogateAuthRequired" : false,
+    "enabled" : true,
+    "alwaysDisplayInConsole" : false,
+    "clientAuthenticatorType" : "client-secret",
+    "secret" : "secret",
+    "redirectUris" : [ "/*" ],
+    "webOrigins" : [ "/*" ],
+    "notBefore" : 0,
+    "bearerOnly" : false,
+    "consentRequired" : false,
+    "standardFlowEnabled" : false,
+    "implicitFlowEnabled" : false,
+    "directAccessGrantsEnabled" : false,
+    "serviceAccountsEnabled" : true,
+    "publicClient" : false,
+    "frontchannelLogout" : true,
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "realm_client" : "false",
+      "oidc.ciba.grant.enabled" : "false",
+      "client.secret.creation.time" : "1755372705",
+      "backchannel.logout.session.required" : "true",
+      "standard.token.exchange.enabled" : "false",
+      "frontchannel.logout.session.required" : "true",
+      "display.on.consent.screen" : "false",
+      "oauth2.device.authorization.grant.enabled" : "false",
+      "backchannel.logout.revoke.offline.tokens" : "false"
+    },
+    "authenticationFlowBindingOverrides" : { },
+    "fullScopeAllowed" : true,
+    "nodeReRegistrationTimeout" : -1,
+    "defaultClientScopes" : [ "web-origins", "service_account", "acr", "roles", "profile", "basic", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "organization", "microprofile-jwt" ]
   } ],
   "clientScopes" : [ {
