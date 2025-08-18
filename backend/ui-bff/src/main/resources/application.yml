@@ -98,7 +98,7 @@ com:
           csrf-cookie-path: /ui
           oauth2-redirections:
             authentication-entry-point: UNAUTHORIZED
-            pre-authorization-code: OK
+            pre-authorization-code: FOUND
             rp-initiated-logout: ACCEPTED
           back-channel-logout:
             enabled: true

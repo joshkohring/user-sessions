@@ -47,11 +47,11 @@ export function unauthorizedInterceptor(
 ): Observable<HttpEvent<unknown>> {
   return next(req).pipe(
     catchError((error) => {
-      if (error.status === 401) {
+      /*if (error.status === 401) {
         window.location.href =
           '/third-party/bff/oauth2/authorization/third-party?post_login_success_uri=' +
           encodeURIComponent(location.toString());
-      }
+      }*/
       throw error;
     })
   );
