@@ -48,6 +48,18 @@ import { User, UserService } from './user.service';
         <td>{{ user.current.ssoSessionMaxAt | date : DATE_FMT }}</td>
       </tr>
       <tr>
+        <td>Auth Time:</td>
+        <td>{{ authTime() | date : DATE_FMT }}</td>
+      </tr>
+      <tr>
+        <td>Calculated Session Max:</td>
+        <td>{{ user.current.ssoSessionMaxAt | date : DATE_FMT }}</td>
+      </tr>
+      <tr>
+        <td>Is Session Extendable:</td>
+        <td>{{ isSessionExtendable() }}</td>
+      </tr>
+      <tr>
         <td>current time</td>
         <td>{{ clock() | date : DATE_FMT }}</td>
       </tr>
@@ -84,6 +96,9 @@ export class App {
     signal(undefined);
   protected readonly accessTokenExpiresIn: WritableSignal<number | undefined> =
     signal(undefined);
+  protected readonly authTime: Signal<Date | undefined>;
+  protected readonly calculatedSessionMax: Signal<Date | undefined>;
+  protected readonly isSessionExtendable: Signal<boolean | undefined>;
   protected readonly sessionInfo$: Observable<SessionInfo>;
   protected readonly message = signal<string>('');
   protected readonly bffSessionLastAccessed: Signal<Date | undefined>;
@@ -120,6 +135,21 @@ export class App {
       });
 
     this.sessionInfo$ = user.sessionChanges;
+    this.authTime = toSignal(
+      user.sessionChanges.pipe(
+        map((sessionInfo) => this.toDate(sessionInfo.authTime))
+      )
+    );
+    this.calculatedSessionMax = toSignal(
+      user.sessionChanges.pipe(
+        map((sessionInfo) => this.toDate(sessionInfo.maxSessionExp))
+      )
+    );
+    this.isSessionExtendable = toSignal(
+      user.sessionChanges.pipe(
+        map((sessionInfo) => sessionInfo.isExtendable)
+      )
+    );
     this.bffSessionLastAccessed = toSignal(
       user.sessionChanges.pipe(
         map((sessionInfo) => this.toDate(sessionInfo.bffSessionLastAccessed))
