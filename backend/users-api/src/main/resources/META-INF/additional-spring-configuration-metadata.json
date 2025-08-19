@@ -39,6 +39,11 @@
       "name": "users-internal-uri",
       "type": "java.net.URI",
       "description": "URI to reach the users micro service directly (not through the reverse proc"
+    },
+    {
+      "name": "user-service-client-secret",
+      "type": "java.lang.String",
+      "description": "Secret for the \"user-service\" client used to query the Keycloak Admin API."
     }
   ]
 }

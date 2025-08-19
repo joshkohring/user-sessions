@@ -40,10 +40,19 @@ import { User, UserService } from './user.service';
         <td>{{ bffSessionLastAccessed() | date : DATE_FMT }}</td>
       </tr>
       <tr>
+        <td>User session idle:</td>
+        <td>{{ user.current.ssoSessionIdleAt | date : DATE_FMT }}</td>
+      </tr>
+      <tr>
+        <td>User session max:</td>
+        <td>{{ user.current.ssoSessionMaxAt | date : DATE_FMT }}</td>
+      </tr>
+      <tr>
         <td>current time</td>
         <td>{{ clock() | date : DATE_FMT }}</td>
       </tr>
     </table>
+
     <div class="mt-2">
       <button mat-button (click)="ping()">Ping</button> uses an access token
       (refreshes it if expired or expires within the current minute)
@@ -52,7 +61,7 @@ import { User, UserService } from './user.service';
 
     @if (currentUser()?.isAuthenticated) {
     <div class="mt-2">
-      <button mat-button(click)="user.refreshSessionInfo()">
+      <button mat-button (click)="user.refreshSessionInfo()">
         Force user session info refresh
       </button>
     </div>

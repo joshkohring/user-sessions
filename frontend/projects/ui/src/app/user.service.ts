@@ -5,10 +5,7 @@ import {
   MatDialogRef,
   MatDialogState,
 } from '@angular/material/dialog';
-import {
-  SessionInfo,
-  UiBffSessionsApi,
-} from '@c4-soft/ui-bff-api';
+import { SessionInfo, UiBffSessionsApi } from '@c4-soft/ui-bff-api';
 import { PingApi, UsersApi } from '@c4-soft/users-api';
 import { finalize, timer } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
@@ -35,21 +32,30 @@ export class UserService {
 
   refresh(): void {
     this.usersApi.getMe().subscribe({
-      next: (user) => {
-        if (!user.sub) {
-          this.user$.next(User.ANONYMOUS);
-        } else {
-          this.user$.next(
-            new User(
-              user.sub,
-              user.preferredUsername,
-              user.roles || [],
-              user.email || null
-            )
-          );
-          this.refreshSessionInfo();
-        }
-      },
+      next: (user) =>
+        this.usersApi.getOpSession().subscribe({
+          next: (opSession) => {
+            if (!user.sub) {
+              this.user$.next(User.ANONYMOUS);
+            } else {
+              this.user$.next(
+                new User(
+                  user.sub,
+                  user.preferredUsername,
+                  user.roles || [],
+                  user.email || null,
+                  opSession.idle ? new Date(opSession.idle * 1000) : undefined,
+                  opSession.max ? new Date(opSession.max * 1000) : undefined,
+                )
+              );
+              this.refreshSessionInfo();
+            }
+          },
+          error: (error) => {
+            console.warn(error);
+            this.user$.next(User.ANONYMOUS);
+          },
+        }),
       error: (error) => {
         console.warn(error);
         this.user$.next(User.ANONYMOUS);
@@ -91,7 +97,7 @@ export class UserService {
                           },
                         });
                       } else {
-                        // this.logout(false);
+                        this.logout(false);
                       }
                     });
                 }
@@ -163,14 +169,15 @@ export class UserService {
 }
 
 export class User {
-  static readonly ANONYMOUS = new User('', '', [], null);
+  static readonly ANONYMOUS = new User('', '', [], null, undefined, undefined);
 
   constructor(
     readonly sub: string,
     readonly name: string,
     readonly roles: string[],
     readonly email: string | null,
-    readonly accessUntil?: Date
+    readonly ssoSessionIdleAt?: Date,
+    readonly ssoSessionMaxAt?: Date
   ) {}
 
   get isAuthenticated(): boolean {

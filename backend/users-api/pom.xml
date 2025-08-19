@@ -22,6 +22,10 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
@@ -45,6 +49,11 @@
 		<dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.c4-soft.springaddons</groupId>
+            <artifactId>spring-addons-starter-rest</artifactId>
         </dependency>
 
 		<dependency>
@@ -95,6 +104,29 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <!-- compilation issues solved by the fmt-maven-plugin below -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <skipValidateSpec>true</skipValidateSpec>
+                            <inputSpec>
+                                ${project.basedir}/../../keycloak/keycloak-admin-api.openapi.json</inputSpec>
+                            <apiPackage>org.keycloak.admin.api</apiPackage>
+                            <modelPackage>org.keycloak.admin.model</modelPackage>
+                            <!-- prevent a name colllision between the
+                            deprecated authTime (Integer) and the new auth_time
+                            (Long) in IDToken -->
+                            <nameMappings>auth_time=authTimeLong</nameMappings>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.spotify.fmt</groupId>
                 <artifactId>fmt-maven-plugin</artifactId>

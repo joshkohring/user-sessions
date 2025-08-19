@@ -45,12 +45,13 @@ import { User, UserService } from './user.service';
       </tr>
     </table>
 
-    @if (currentUser()?.isAuthenticated) {
     <div class="mt-2">
       <button mat-button (click)="ping()">Ping</button> uses an access token
       (refreshes it if expired or expires within the current minute)
       <div>{{ message() }}</div>
     </div>
+
+    @if (currentUser()?.isAuthenticated) {
     <div class="mt-2">
       <button mat-button (click)="user.refreshSessionInfo()">
         Force user session info refresh

@@ -8,7 +8,7 @@ import { MatDialogModule } from '@angular/material/dialog';
   template: `
     <mat-dialog-content>Your session is about to expire.</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button [mat-dialog-close]="true">Keep alive</button>
+      <button mat-button [mat-dialog-close]="true">Stay connected</button>
     </mat-dialog-actions>
   `,
   styles: ``,

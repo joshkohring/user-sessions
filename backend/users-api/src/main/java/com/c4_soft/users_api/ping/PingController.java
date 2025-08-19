@@ -1,4 +1,4 @@
-package com.c4_soft.users_api;
+package com.c4_soft.users_api.ping;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,16 +11,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class PingController {
 
   /**
-   * @return "pong" if the user is authenticated.
+   * @return "Pong!" if the user is authenticated.
    */
   @GetMapping(path = "/ping", produces = {MediaType.APPLICATION_JSON_VALUE})
   @PreAuthorize("isAuthenticated()")
   public PingResponse ping() {
     return PingResponse.PONG;
-  }
-
-  public static record PingResponse(String message) {
-    public static final PingResponse PONG = new PingResponse("Pong!");
   }
 
 }

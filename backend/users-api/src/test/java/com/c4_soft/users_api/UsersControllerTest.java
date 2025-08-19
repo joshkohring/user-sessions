@@ -5,19 +5,27 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.junit.jupiter.api.Test;
+import org.keycloak.admin.api.RealmsAdminApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithJwt;
 import com.c4_soft.springaddons.security.oauth2.test.webmvc.AutoConfigureAddonsWebmvcResourceServerSecurity;
 import com.c4_soft.springaddons.security.oauth2.test.webmvc.MockMvcSupport;
+import com.c4_soft.users_api.users.UsersController;
 
 @WebMvcTest(UsersController.class)
 @AutoConfigureAddonsWebmvcResourceServerSecurity
+@Import({SecurityConfiguration.class}) // Import security configuration to enable method security
 class UsersControllerTest {
 
   @Autowired
   MockMvcSupport api;
+
+  @MockitoBean
+  RealmsAdminApi realmsAdminApi; // Mocked to avoid Keycloak connection issues in tests
 
   // ------ /
   // Get me /
@@ -25,16 +33,10 @@ class UsersControllerTest {
 
   @Test
   @WithAnonymousUser
-  void givenRequestIsAnonymous_whenGetMe_thenReturnAnonymousUser() throws Exception {
+  void givenRequestIsAnonymous_whenGetMe_thenUnauthorized() throws Exception {
     // @formatter:off
     api.get("https://localhost/users/me")
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.sub").exists())
-      .andExpect(jsonPath("$.sub", is("")))
-      .andExpect(jsonPath("$.preferredUsername", is("")))
-      .andExpect(jsonPath("$.email").isEmpty())
-      .andExpect(jsonPath("$.roles").isArray())
-      .andExpect(jsonPath("$.roles").isEmpty());
+      .andExpect(status().isUnauthorized());
     // @formatter:on
   }
 

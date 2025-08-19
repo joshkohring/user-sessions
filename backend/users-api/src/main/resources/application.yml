@@ -1,6 +1,7 @@
 realm-name: sample
 reverse-proxy-uri: https://localhost
 sso-issuer: ${reverse-proxy-uri}/auth/realms/${realm-name}
+user-service-client-secret: secret
 
 
 server:
@@ -9,8 +10,7 @@ server:
     include-message: always
   ssl:
     enabled: true
-    bundle: self-signed
-    
+    bundle: server
 
 spring:
   application:
@@ -19,13 +19,29 @@ spring:
     import:
     - optional:configtree:/workspace/config/
     - optional:configtree:/workspace/secret/
+  security:
+    oauth2:
+      client:
+        provider:
+          sso:
+            issuer-uri: ${sso-issuer}
+        registration:
+          user-service:
+            provider: sso
+            client-id: user-service
+            client-secret: ${user-service-client-secret}
+            scope: openid
+            authorization-grant-type: client_credentials
   ssl:
     bundle:
       pem:
-        self-signed:
+        server:
           keystore:
             certificate: classpath:tls.crt
             private-key: classpath:tls.key
+        client:
+          truststore:
+            certificate: classpath:tls.crt
 
 com:
   c4-soft:
@@ -42,10 +58,17 @@ com:
             prefix: 'third-party.'
         resourceserver:
           permit-all:
-          - /users/me
           - /v3/api-docs/**
           - /actuator/health/readiness
           - /actuator/health/liveness
+      rest:
+        client:
+          keycloak-admin:
+            base-url: ${reverse-proxy-uri}/auth
+            authorization:
+              oauth2:
+                oauth2-registration-id: user-service
+            ssl-bundle: client
 
 management:
   endpoint:

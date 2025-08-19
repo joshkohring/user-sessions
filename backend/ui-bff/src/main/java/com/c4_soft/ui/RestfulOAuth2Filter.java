@@ -1,6 +1,7 @@
 package com.c4_soft.ui;
 
 import java.io.IOException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
@@ -12,7 +13,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.ThrowableAnalyzer;
-import com.c4_soft.springaddons.security.oidc.starter.synchronised.client.SpringAddonsOauth2RedirectStrategy;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +25,10 @@ public class RestfulOAuth2Filter extends OAuth2AuthorizationRequestRedirectFilte
   private final RedirectStrategy authorizationRedirectStrategy;
 
   private final RedirectStrategy unauthorizedStrategy =
-      new SpringAddonsOauth2RedirectStrategy(HttpStatus.UNAUTHORIZED);
+      (HttpServletRequest request, HttpServletResponse response, String location) -> {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setHeader(HttpHeaders.LOCATION, location);
+      };
 
   private final OAuth2AuthorizationRequestResolver authorizationRequestResolver;
 
