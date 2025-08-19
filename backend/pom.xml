@@ -44,7 +44,7 @@
 		<java.version>24</java.version>
 		<spring-cloud.version>2025.0.0</spring-cloud.version>
 
-		<com.c4-soft.springaddons.version>8.1.21</com.c4-soft.springaddons.version>
+		<com.c4-soft.springaddons.version>8.1.22</com.c4-soft.springaddons.version>
 
 		<openapi-generator-maven-plugin.version>7.13.0</openapi-generator-maven-plugin.version>
 		<swagger-annotations.version>2.2.34</swagger-annotations.version>

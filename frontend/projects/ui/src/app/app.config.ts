@@ -54,7 +54,7 @@ export function unauthorizedInterceptor(exceptions: string[]) {
           ) {
             window.location.href =
               environment.bffBaseUrl +
-              '/oauth2/authorization/ui?post_login_success_uri=' +
+              '/oauth2/authorization/ui?response_http_status=302&post_login_success_uri=' +
               encodeURIComponent(location.toString());
           }
         }
