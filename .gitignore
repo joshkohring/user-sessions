@@ -12,4 +12,4 @@
 
 certs/*
 
-*.openapi.json
+/*.openapi.json
