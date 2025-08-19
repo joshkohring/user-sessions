@@ -1,6 +1,8 @@
 package com.c4_soft.ui;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
 import org.springframework.http.MediaType;
@@ -44,11 +46,19 @@ public class SessionInfoController {
           getExp(authorizedClient == null || authorizedClient.getRefreshToken() == null ? null
               : authorizedClient.getRefreshToken().getTokenValue());
 
+      final var authTime = 
+          getAuthTime(authorizedClient == null || authorizedClient.getAccessToken() == null ? null
+              : authorizedClient.getAccessToken().getTokenValue());
+
+      final var maxSessionExp = getMaxSessionExp(authTime);
+
+      final var isExtendable = getIsExtendable(maxSessionExp, refreshExp);
+
       return new SessionInfo(oauth.getName(), sessionId, refreshExp, getLastAccessed(session),
-          getExp(session), accessExp);
+          getExp(session), accessExp, authTime, maxSessionExp, isExtendable);
     }
 
-    return new SessionInfo("", sessionId, null, getLastAccessed(session), getExp(session), null);
+    return new SessionInfo("", sessionId, null, getLastAccessed(session), getExp(session), null, null, null, false);
   }
 
   private Map<String, Object> getClaims(String jwt) {
@@ -67,6 +77,31 @@ public class SessionInfoController {
     }
   }
 
+  private boolean getIsExtendable(Integer maxSessionExp, Integer refreshExp) {
+    if(maxSessionExp != null & refreshExp != null) {
+      if(maxSessionExp <= refreshExp) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private Integer getMaxSessionExp(Integer authTime) {
+    Instant authTimeInstant = Instant.ofEpochSecond(authTime);
+    // Workaround to not need a keycloak hit
+    // Keycloak SSO Session Max, make this a property instead of hardcode
+    Duration maxSessionExp = Duration.ofMinutes(10);
+    Instant maxSessionExpInstant = authTimeInstant.plusMillis(maxSessionExp.toMillis());
+    return (int) maxSessionExpInstant.getEpochSecond();
+  }
+
+  private Integer getAuthTime(String accessTokenValue) {
+    final var claims = getClaims(accessTokenValue);
+
+    return claims == null ? null : (Integer) claims.get("auth_time");
+  }
+
   private Integer getExp(String tokenValue) {
     final var claims = getClaims(tokenValue);
 
@@ -82,6 +117,6 @@ public class SessionInfoController {
   }
 
   public static record SessionInfo(@NotNull String name, String sessionId, Integer userSessionExp,
-      Integer bffSessionLastAccessed, Integer bffSessionExp, Integer accessTokenExp) {
+      Integer bffSessionLastAccessed, Integer bffSessionExp, Integer accessTokenExp, Integer authTime, Integer maxSessionExp, boolean isExtendable) {
   }
 }
