@@ -54,7 +54,7 @@ import { User, UserService } from './user.service';
     @if (currentUser()?.isAuthenticated) {
     <div class="mt-2">
       <button mat-button (click)="user.refreshSessionInfo()">
-        Force user session info refresh
+        Refresh BFF session info
       </button>
     </div>
     <button mat-button (click)="user.logout()">Logout</button>

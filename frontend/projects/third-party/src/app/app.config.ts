@@ -26,10 +26,11 @@ import {
 } from '@c4-soft/users-api';
 import { catchError, Observable } from 'rxjs';
 import { routes } from './app.routes';
+import { environment } from '../environments/environment';
 
 export function thirPartyBffApiConfigFactory(): ThirdPartyBffApiConfiguration {
   const params: ThirdPartyBffApiConfigurationParameters = {
-    basePath: 'https://localhost/third-party/bff',
+    basePath: environment.bffBaseUrl,
   };
   return new ThirdPartyBffApiConfiguration(params);
 }

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
@@ -16,8 +16,8 @@ import { AboutToExpireDialog } from './about-to-expire.dialog';
   providedIn: 'root',
 })
 export class UserService {
-  private user$ = new BehaviorSubject<User>(User.ANONYMOUS);
-  private sessionInfo$ = new BehaviorSubject<SessionInfo>({ name: '' });
+  private readonly user$ = new BehaviorSubject<User>(User.ANONYMOUS);
+  private readonly sessionInfo$ = new BehaviorSubject<SessionInfo>({ name: '' });
   private aboutToExpireDialog?: MatDialogRef<AboutToExpireDialog>;
 
   constructor(
